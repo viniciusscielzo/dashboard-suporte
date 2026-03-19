@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Executivo de Suporte</title>
+  <style>
+    :root {
+      --bg:#08131d;
+      --bg2:#102635;
+      --card:#ffffff;
+      --line:#e6eef3;
+      --text:#13222d;
+      --muted:#5f7485;
+      --cyan:#1dc7ff;
+      --cyan2:#0c7ea0;
+      --navy:#0e1f2b;
+      --green:#17b387;
+      --shadow:0 18px 44px rgba(0,0,0,.16);
+      --radius:22px;
+    }
+    * { box-sizing:border-box; }
+    body {
+      margin:0;
+      font-family: Inter, Segoe UI, Arial, sans-serif;
+      color:var(--text);
+      background: radial-gradient(circle at top, #16384b 0%, var(--bg) 55%);
+    }
+    .wrap { max-width: 1440px; margin: 0 auto; padding: 22px; }
+    .hero {
+      color:#fff;
+      background: linear-gradient(135deg, #0c1b27, #102838);
+      border:1px solid rgba(29,199,255,.12);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .hero-inner {
+      display:flex; justify-content:space-between; gap:24px; flex-wrap:wrap;
+      padding:26px;
+    }
+    .badge {
+      display:inline-block; padding:8px 12px; border-radius:999px;
+      background: rgba(29,199,255,.12); color:#9feeff; font-size:12px; font-weight:700;
+      letter-spacing:.04em;
+    }
+    h1 { margin:12px 0 8px; font-size:34px; line-height:1.1; }
+    .sub { max-width:880px; color:#c9d7df; font-size:14px; line-height:1.6; }
+    .hero-actions { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-start; }
+    .btn {
+      display:inline-block; padding:12px 16px; border-radius:16px; text-decoration:none;
+      font-weight:700; font-size:14px; cursor:pointer; border:0;
+    }
+    .btn-primary { background:var(--cyan); color:#03212a; }
+    .btn-secondary { background:transparent; color:#e0f8ff; border:1px solid rgba(29,199,255,.24); }
+    .tabs { display:flex; gap:8px; padding:0 26px 20px; flex-wrap:wrap; }
+    .tab {
+      background: rgba(255,255,255,.08); color:#d7e4ea; border:1px solid rgba(255,255,255,.1);
+      border-radius:14px; padding:11px 14px; font-weight:700; cursor:pointer;
+    }
+    .tab.active { background:#fff; color:#12222c; }
+    .panel { display:none; margin-top:18px; }
+    .panel.active { display:block; }
+    .card {
+      background:rgba(255,255,255,.97);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+    .section { padding:18px; }
+    .filters {
+      display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:14px;
+    }
+    .field label {
+      display:block; margin-bottom:7px; font-size:12px; color:#4f6576; font-weight:700;
+    }
+    select, input {
+      width:100%; padding:11px 12px; border:1px solid var(--line);
+      border-radius:14px; font-size:14px; background:#fff;
+    }
+    .topbar {
+      display:flex; justify-content:space-between; gap:16px; align-items:flex-start; flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .title { font-size:16px; font-weight:800; }
+    .subtitle { font-size:12px; color:var(--muted); margin-top:4px; }
+    .kpis {
+      display:grid; grid-template-columns:repeat(4,minmax(0,1fr)); gap:14px; margin-top:16px;
+    }
+    .kpi { padding:18px; }
+    .kpi-top { display:flex; justify-content:space-between; gap:10px; align-items:flex-start; }
+    .kpi-label { font-size:13px; color:var(--muted); }
+    .kpi-value { font-size:31px; font-weight:800; margin:12px 0 4px; word-break:break-word; }
+    .kpi-sub { font-size:12px; color:var(--muted); }
+    .icon {
+      width:42px; height:42px; border-radius:14px; background:#eaf9fe; color:#0c7ea0;
+      display:flex; align-items:center; justify-content:center; font-weight:800;
+    }
+    .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-top:16px; }
+    .chart-card { padding:18px; }
+    .chart-wrap { height:320px; }
+    .bar-list, .legend-list { display:flex; flex-direction:column; gap:10px; }
+    .bar-row {
+      display:grid; grid-template-columns:minmax(100px,230px) 1fr 56px; gap:10px; align-items:center;
+    }
+    .bar-label {
+      font-size:12px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+    }
+    .bar-track {
+      height:16px; background:#edf4f8; border-radius:999px; overflow:hidden;
+    }
+    .bar-fill {
+      height:100%; background:linear-gradient(90deg, var(--cyan), var(--cyan2)); border-radius:999px;
+    }
+    .bar-value { text-align:right; font-size:12px; font-weight:700; color:#385366; }
+    .donut-box {
+      display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:center; height:100%;
+    }
+    .donut-svg { width:220px; height:220px; display:block; margin:auto; }
+    .legend-item {
+      display:grid; grid-template-columns:14px 1fr auto; gap:10px; align-items:center; font-size:13px;
+    }
+    .swatch { width:14px; height:14px; border-radius:5px; }
+    .line-svg { width:100%; height:100%; display:block; }
+    .table-wrap { max-height:420px; overflow:auto; border:1px solid #edf3f7; border-radius:16px; }
+    table { width:100%; border-collapse:collapse; }
+    th, td { padding:10px 8px; border-bottom:1px solid #ebf1f5; font-size:13px; text-align:left; }
+    th { color:#557083; background:#f8fbfd; position:sticky; top:0; }
+    .muted { color:var(--muted); }
+    .pill {
+      display:inline-block; padding:8px 12px; background:#eef8fb; border-radius:999px;
+      font-size:12px; color:#335466; font-weight:700;
+    }
+    .small-grid {
+      display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px;
+    }
+
+    .rec-card { padding:18px; border:1px solid #edf3f7; border-radius:18px; background:#fbfdfe; margin-bottom:14px; }
+    .rec-head { display:flex; justify-content:space-between; gap:12px; align-items:flex-start; flex-wrap:wrap; }
+    .rec-name { font-size:18px; font-weight:800; }
+    .rec-total { font-size:14px; color:var(--muted); font-weight:700; }
+    .rec-list { margin:12px 0 0; padding-left:18px; color:#304b5c; line-height:1.7; }
+    .logic-card { padding:16px; background:#f8fbfd; border-radius:18px; }
+    @media (max-width:1100px) {
+      .filters { grid-template-columns:repeat(3,minmax(0,1fr)); }
+      .kpis { grid-template-columns:repeat(2,minmax(0,1fr)); }
+      .grid-2, .small-grid { grid-template-columns:1fr; }
+    }
+    @media (max-width:700px) {
+      .wrap { padding:14px; }
+      h1 { font-size:28px; }
+      .filters { grid-template-columns:1fr 1fr; }
+      .kpis { grid-template-columns:1fr; }
+      .donut-box { grid-template-columns:1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="hero">
+      <div class="hero-inner">
+        <div>
+          <span class="badge">CROSS Connection • Versão para diretoria</span>
+          <h1>Dashboard Executivo de Suporte</h1>
+          <div class="sub">
+            Site estático pronto para apresentação à diretoria, já carregado com as 50 linhas reais enviadas de chamados e as 50 linhas da base de rede.
+            O dashboard cruza chamados com a infraestrutura por bairro + cidade e entrega leitura executiva por motivo, região, PON, OLT, período e atendente.
+          </div>
+        </div>
+        <div class="hero-actions">
+          <button class="btn btn-primary" onclick="downloadCSV('chamados')">Baixar base de chamados</button>
+          <button class="btn btn-secondary" onclick="downloadCSV('rede')">Baixar base de rede</button>
+        </div>
+      </div>
+      <div class="tabs">
+        <button class="tab active" data-tab="dashboard" onclick="switchTab('dashboard')">Dashboard</button>
+        <button class="tab" data-tab="dados" onclick="switchTab('dados')">Importar dados</button>
+        <button class="tab" data-tab="amostra" onclick="switchTab('amostra')">Base consolidada</button>
+        <button class="tab" data-tab="recorrentes" onclick="switchTab('recorrentes')">Clientes recorrentes</button>
+        <button class="tab" data-tab="estrutura" onclick="switchTab('estrutura')">Lógica do projeto</button>
+      </div>
+    </div>
+
+    <div id="dashboard" class="panel active">
+      <div class="card section">
+        <div class="topbar">
+          <div>
+            <div class="title">Filtros gerenciais</div>
+            <div class="subtitle">Use os filtros para navegar na operação sem alterar a base original.</div>
+          </div>
+          <button class="btn btn-secondary" style="color:#13222d; border-color:#dce7ef" onclick="resetFilters()">Limpar filtros</button>
+        </div>
+        <div class="filters">
+          <div class="field"><label>Período</label><select id="f_periodo" onchange="renderAll()"></select></div>
+          <div class="field"><label>Região / Cidade</label><select id="f_regiao" onchange="renderAll()"></select></div>
+          <div class="field"><label>Atendente</label><select id="f_atendente" onchange="renderAll()"></select></div>
+          <div class="field"><label>Motivo</label><select id="f_motivo" onchange="renderAll()"></select></div>
+          <div class="field"><label>OLT</label><select id="f_olt" onchange="renderAll()"></select></div>
+          <div class="field"><label>Busca rápida</label><input id="f_search" type="text" placeholder="Cliente, protocolo, bairro..." oninput="renderAll()"></div>
+        </div>
+      </div>
+
+      <div class="kpis">
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Total de tickets</div><div class="kpi-value" id="kpi_total">0</div><div class="kpi-sub">Base filtrada</div></div><div class="icon">TK</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Motivo líder</div><div class="kpi-value" id="kpi_motivo">-</div><div class="kpi-sub">Maior recorrência</div></div><div class="icon">MT</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Região líder</div><div class="kpi-value" id="kpi_regiao">-</div><div class="kpi-sub">Cidade com mais tickets</div></div><div class="icon">RG</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">OLT líder</div><div class="kpi-value" id="kpi_olt">-</div><div class="kpi-sub">Infraestrutura mais acionada</div></div><div class="icon">OT</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Atendente líder</div><div class="kpi-value" id="kpi_atendente">-</div><div class="kpi-sub">Por abertura</div></div><div class="icon">AT</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Base chamados</div><div class="kpi-value">50</div><div class="kpi-sub">Linhas incorporadas</div></div><div class="icon">BC</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">Base rede</div><div class="kpi-value">50</div><div class="kpi-sub">Mapeamentos incorporados</div></div><div class="icon">BR</div></div></div>
+        <div class="card kpi"><div class="kpi-top"><div><div class="kpi-label">PON líder</div><div class="kpi-value" id="kpi_pon">-</div><div class="kpi-sub">Maior concentração</div></div><div class="icon">PN</div></div></div>
+      </div>
+
+      <div class="grid-2">
+        <div class="card chart-card">
+          <div class="title">Tickets por motivo</div>
+          <div class="subtitle">Baseado no campo descrição do chamado.</div>
+          <div class="chart-wrap" id="chart_motivos"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="title">Tickets por região / cidade</div>
+          <div class="subtitle">Leitura territorial da base de chamados.</div>
+          <div class="chart-wrap" id="chart_regioes"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="title">Tickets por PON</div>
+          <div class="subtitle">Cruzamento dos tickets com a infraestrutura.</div>
+          <div class="chart-wrap" id="chart_pons"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="title">Tickets por OLT</div>
+          <div class="subtitle">Visão de impacto por infraestrutura.</div>
+          <div class="chart-wrap" id="chart_olts"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="title">Tickets por período</div>
+          <div class="subtitle">Início, meio e fim do mês conforme data de abertura.</div>
+          <div class="chart-wrap" id="chart_periodos"></div>
+        </div>
+        <div class="card chart-card">
+          <div class="title">Tickets por atendente</div>
+          <div class="subtitle">Baseado em operador_abertura.</div>
+          <div class="chart-wrap" id="chart_atendentes"></div>
+        </div>
+      </div>
+
+      <div class="card chart-card" style="margin-top:16px">
+        <div class="title">Evolução por data de abertura</div>
+        <div class="subtitle">Comportamento diário da base filtrada.</div>
+        <div class="chart-wrap" id="chart_timeline"></div>
+      </div>
+    </div>
+
+
+    <div id="dados" class="panel">
+      <div class="grid-2">
+        <div class="card section">
+          <div class="topbar">
+            <div>
+              <div class="title">Importar base principal de chamados</div>
+              <div class="subtitle">Aceita CSV e XLSX. Ao importar, a base embutida é substituída pela nova base carregada.</div>
+            </div>
+            <div class="pill" id="statusChamados">Base atual carregada</div>
+          </div>
+          <div class="field">
+            <label>Arquivo de chamados (.csv ou .xlsx)</label>
+            <input id="uploadChamados" type="file" accept=".csv,.xlsx,.xls" onchange="handleUpload(event, 'chamados')" />
+          </div>
+          <div class="subtitle" style="margin-top:12px">
+            Colunas esperadas: dt_abertura, dt_finaliza, protocolo, operador_abertura, nome_razaosocial, nome_processo, descricao, descricao_encerramento, operador_encerramento, codcontrato, adesao, logradouro, bairro, cidade
+          </div>
+        </div>
+
+        <div class="card section">
+          <div class="topbar">
+            <div>
+              <div class="title">Importar base de rede / OLT / PON</div>
+              <div class="subtitle">Aceita CSV e XLSX. Essa base enriquece o dashboard com OLT e PON por bairro + cidade.</div>
+            </div>
+            <div class="pill" id="statusRede">Base atual carregada</div>
+          </div>
+          <div class="field">
+            <label>Arquivo de rede (.csv ou .xlsx)</label>
+            <input id="uploadRede" type="file" accept=".csv,.xlsx,.xls" onchange="handleUpload(event, 'rede')" />
+          </div>
+          <div class="subtitle" style="margin-top:12px">
+            Colunas esperadas: bairro, cidade, olt, interface_olt, pon, descricao2
+          </div>
+        </div>
+      </div>
+
+      <div class="card section" style="margin-top:16px">
+        <div class="title">Observação sobre esta versão</div>
+        <div class="subtitle" style="margin-top:8px">
+          Este site já abre preenchido com a base enviada por você. A aba de importação existe para trocar rapidamente a base durante apresentações ou novos testes, sem depender de código.
+        </div>
+      </div>
+    </div>
+
+    <div id="amostra" class="panel">
+      <div class="card section">
+        <div class="topbar">
+          <div>
+            <div class="title">Base consolidada exibida no site</div>
+            <div class="subtitle">Amostra dos tickets já enriquecidos com PON e OLT.</div>
+          </div>
+          <div class="pill" id="tableCount">0 linhas</div>
+        </div>
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Data</th>
+                <th>Protocolo</th>
+                <th>Cliente</th>
+                <th>Motivo</th>
+                <th>Cidade</th>
+                <th>Bairro</th>
+                <th>PON</th>
+                <th>OLT</th>
+                <th>Atendente</th>
+              </tr>
+            </thead>
+            <tbody id="tableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+
+    <div id="recorrentes" class="panel">
+      <div class="card section">
+        <div class="topbar">
+          <div>
+            <div class="title">Clientes recorrentes nos últimos 30 dias</div>
+            <div class="subtitle">Lista automática de clientes que abriram mais de um chamado no período de 30 dias, com detalhamento por motivo.</div>
+          </div>
+          <div class="pill" id="recorrentesCount">0 clientes</div>
+        </div>
+        <div class="subtitle" style="margin-bottom:14px">
+          A leitura considera a data mais recente da base como referência e retroage 30 dias corridos.
+        </div>
+        <div id="recorrentesList"></div>
+      </div>
+    </div>
+
+    <div id="estrutura" class="panel">
+      <div class="small-grid">
+        <div class="card logic-card">
+          <div class="title">Base usada</div>
+          <div class="subtitle" style="margin-top:8px">
+            Este site já incorpora as 50 linhas de chamados e as 50 linhas da base de rede enviadas por você.
+          </div>
+        </div>
+        <div class="card logic-card">
+          <div class="title">Lógica de negócio</div>
+          <div class="subtitle" style="margin-top:8px">
+            Motivo = descrição do chamado • Região = cidade • Atendente = operador de abertura • Período = data de abertura • OLT/PON = cruzamento por bairro + cidade • Recorrentes = clientes com mais de 1 chamado nos últimos 30 dias.
+          </div>
+        </div>
+        <div class="card logic-card">
+          <div class="title">Próxima evolução</div>
+          <div class="subtitle" style="margin-top:8px">
+            Após aprovação, o time de TI pode transformar esta versão estática em produto com banco, login real, histórico, importação auditada CSV/XLSX e integração automática.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    let chamadosRaw = [{"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.1, "operador_abertura": "carlos.augusto", "nome_razaosocial": "GENIVAL BELTRAME", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "carlos.augusto", "codcontrato": 45820, "adesao": "01/07/2019", "logradouro": "R LUCCA BELTRAME", "bairro": "ARRAIAL", "cidade": "Tuiuti"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.103, "operador_abertura": "jorica", "nome_razaosocial": "JUSSARA DA GUERRA CAMARGO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 70482, "adesao": "18/03/2019", "logradouro": "ESTR ISMAEL LEME MOURA", "bairro": "BOM RETIRO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "04/03/2026", "protocolo": 2603.108, "operador_abertura": "carlos.augusto", "nome_razaosocial": "AMANDA SOUZA DE MORAIS ALBINO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 117831, "adesao": "22/08/2025", "logradouro": "ESTRADA DA SERRINHA", "bairro": "SERRINHA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.11, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "MARIA APARECIDA DE OLIVEIRA BUENO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 116358, "adesao": "03/06/2025", "logradouro": "RUA 02", "bairro": "BOM RETIRO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.113, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "RODRIGO JOSE DE CASTRO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 118984, "adesao": "17/10/2025", "logradouro": "R EXP DEMERVAL OLIVEIRA LEME", "bairro": "JD NOVA AMÉRICA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.115, "operador_abertura": "jorica", "nome_razaosocial": "PAULO ROBERTO DE OLIVEIRA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 88126, "adesao": "16/05/2022", "logradouro": "R JÚLIO P ALBUQUERQUE", "bairro": "JD SEVILHA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "", "protocolo": 2603.116, "operador_abertura": "suportemomento1", "nome_razaosocial": "MARCELA DE SOUZA CARDOSO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Lentidão", "descricao_encerramento": "", "operador_encerramento": "", "codcontrato": 29004, "adesao": "26/09/2016", "logradouro": "AL DAS GUARITÁS", "bairro": "RES VEM VIVER", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "", "protocolo": 2603.12, "operador_abertura": "suportemomento1", "nome_razaosocial": "GUILHERME APARECIDO PEREIRA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "FIN - Cancelamento", "descricao_encerramento": "", "operador_encerramento": "", "codcontrato": 117726, "adesao": "18/08/2025", "logradouro": "AV N SRA DA PENHA", "bairro": "PENHA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.12, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "RICARDO MOREIRA PINTO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 37874, "adesao": "23/04/2018", "logradouro": "R ANTÔNIO GODINHO FILHO", "bairro": "CH JULIETA CRISTINA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.123, "operador_abertura": "jorica", "nome_razaosocial": "FLAVIO GUILHERME BERNARDI", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 102005, "adesao": "24/10/2023", "logradouro": "Rua Lírio", "bairro": "BATATUBA", "cidade": "Piracaia"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.126, "operador_abertura": "carlos.augusto", "nome_razaosocial": "CLAUDIA BEZERRA PIMENTEL", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "carlos.augusto", "codcontrato": 121873, "adesao": "16/02/2026", "logradouro": "R CEL LUIZ LEME", "bairro": "JD STA RITA DE CÁSSIA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "02/03/2026", "protocolo": 2603.131, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "JOSE PAULO PEREIRA DE ALMEIDA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Instabilidade", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 60783, "adesao": "19/08/2020", "logradouro": "Rua Antônio Franco Garcia", "bairro": "Jardim dos Ipês", "cidade": "Artur Nogueira"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.15, "operador_abertura": "carlos.augusto", "nome_razaosocial": "ROBERTO FONTANA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 70985, "adesao": "23/04/2019", "logradouro": "Rua Irmãos Pinheiro", "bairro": "ÁGUA COMPRIDA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.152, "operador_abertura": "jorica", "nome_razaosocial": "FRANCISLEIA GABRIELA MORAES DA SILVA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Lentidão", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 99433, "adesao": "10/04/2021", "logradouro": "RUA JORGE VILA FRANÇA", "bairro": "NOSSO TETO", "cidade": "Piracaia"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.156, "operador_abertura": "jorica", "nome_razaosocial": "MARIANA APARECIDA CLARO - 2° PONTO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 64587, "adesao": "27/08/2020", "logradouro": "DOMINGOS BERNARDES", "bairro": "ARRAIAL", "cidade": "Tuiuti"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "02/03/2026", "protocolo": 2603.157, "operador_abertura": "carlos.augusto", "nome_razaosocial": "TATIANE APARECIDA VALENTIM DE SOUZA - NOVO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "isafre", "codcontrato": 121840, "adesao": "16/02/2026", "logradouro": "Rua Vital - de 350/351 ao fim", "bairro": "Residencial Piemonte", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.159, "operador_abertura": "jorica", "nome_razaosocial": "DANIELE APARECIDA GOMES DA SILVA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 119845, "adesao": "25/11/2025", "logradouro": "AL DAS CEREJEIRAS", "bairro": "COND VALE DAS ÁGUAS", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.162, "operador_abertura": "jorica", "nome_razaosocial": "LUAN HENRIQUE DE SOUZA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 51631, "adesao": "12/02/2020", "logradouro": "AV JOAQUIM SIMPLICIO DOS SANTOS", "bairro": "JD ÁGUAS CLARAS", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.17, "operador_abertura": "carlos.augusto", "nome_razaosocial": "LUCIMEIRE MARCIANO DOS SANTOS SANCHES", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 99646, "adesao": "25/10/2021", "logradouro": "Estrada Municipal André Franco Montoro", "bairro": "POUSO ALEGRE", "cidade": "Piracaia"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.171, "operador_abertura": "jorica", "nome_razaosocial": "JEFFERSON ANTONIO DA SILVA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 120823, "adesao": "08/01/2026", "logradouro": "R. Teixeira", "bairro": "TABOÃO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.179, "operador_abertura": "carlos.augusto", "nome_razaosocial": "ZELIA CRISTINA DOS SANTOS OLIVEIRA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 45370, "adesao": "10/06/2019", "logradouro": "R UM B", "bairro": "TORÓ", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.18, "operador_abertura": "mbarbosa", "nome_razaosocial": "DAIANE SANTOS DA SILVA - SEGUNDO PONTO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mbarbosa", "codcontrato": 122082, "adesao": "24/02/2026", "logradouro": "Rua Madalena Pereira Gomes de Campos", "bairro": "Jardim de Colores", "cidade": "Artur Nogueira"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.181, "operador_abertura": "mbarbosa", "nome_razaosocial": "COMUNIDADE EVANGELICA VIDA DO ALTAR", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Enlace/Torre sem Sinal", "operador_encerramento": "mbarbosa", "codcontrato": 59023, "adesao": "19/08/2020", "logradouro": "Rua Santo de Faveri", "bairro": "Jardim Santa Rosa", "cidade": "Artur Nogueira"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.189, "operador_abertura": "carlos.augusto", "nome_razaosocial": "KELLY CRISTIANE ROMANO DO PRADO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 72526, "adesao": "04/12/2019", "logradouro": "Rodovia Padre Aldo Bolini", "bairro": "Morro Grande da Boa Vista", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.191, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "LEONICE DOMINGOS VAZ DELFINO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Lentidão", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 43557, "adesao": "26/03/2019", "logradouro": "R BONINAS", "bairro": "JD LAGO DO MOINHO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.193, "operador_abertura": "carlos.augusto", "nome_razaosocial": "JAILTON REBELO- SEGUNDO PONTO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 121623, "adesao": "05/02/2026", "logradouro": "R VIRGÍLIO RUBIM DE TOLEDO", "bairro": "VL S CAETANO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.2, "operador_abertura": "carlos.augusto", "nome_razaosocial": "AMANDA KAREN SILVA RAMOS", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "carlos.augusto", "codcontrato": 109630, "adesao": "25/07/2024", "logradouro": "R LUIZ IZZO", "bairro": "QUINTAS DE BRAGANÇA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.202, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "MAIRA LIVIA DE MORAIS FERRARI", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 65459, "adesao": "29/09/2020", "logradouro": "R LAUDELINO BUENO LAMBERTI", "bairro": "CRISTO REDENTOR", "cidade": "Vargem"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.203, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "RODRIGO FERREIRA DA COSTA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 44669, "adesao": "07/05/2019", "logradouro": "R NOVE", "bairro": "CH LUZIA VICENTE", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "02/03/2026", "protocolo": 2603.207, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "VIVIANE SALATA FERRAZ GUERREIRO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Instabilidade", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 65818, "adesao": "14/10/2020", "logradouro": "Rua Luiz Spadaro Cropanise - até 398/399", "bairro": "Jardim Amaro", "cidade": "Artur Nogueira"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.21, "operador_abertura": "jorica", "nome_razaosocial": "ROSELY DA SILVA MELO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 43699, "adesao": "19/03/2019", "logradouro": "R BELO HORIZONTE", "bairro": "VILA SÃO JOSÉ", "cidade": "Bom Jesus dos Perdões"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.216, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "LUIZ GUSTAVO DE SOUSA COIMBRA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Lentidão", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 49705, "adesao": "18/11/2019", "logradouro": "Rua Firenze", "bairro": "Villa Toscana", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.221, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "DENISE RIBEIRO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Instabilidade", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 122101, "adesao": "25/02/2026", "logradouro": "R TRINDADE ACEDO PARANHOS", "bairro": "JD PRIMAVERA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.233, "operador_abertura": "jorica", "nome_razaosocial": "KELLY CRISTIANE ROMANO DO PRADO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 72526, "adesao": "04/12/2019", "logradouro": "Rodovia Padre Aldo Bolini", "bairro": "Morro Grande da Boa Vista", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.24, "operador_abertura": "jorica", "nome_razaosocial": "EDISON DE ALMEIDA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 67915, "adesao": "18/01/2019", "logradouro": "CONDOMINIO VISTA ALEGRE RUA 1", "bairro": "Guachinduva", "cidade": "Bom Jesus dos Perdões"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.242, "operador_abertura": "jorica", "nome_razaosocial": "JOSE RAIMUNDO CAETANO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 99025, "adesao": "28/07/2023", "logradouro": "ESTRADA AURELIO FRIAS FERNANDES", "bairro": "MENIN", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.244, "operador_abertura": "jorica", "nome_razaosocial": "DANIELLE NAGAO RABELLO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 116771, "adesao": "25/06/2025", "logradouro": "R LUIZ IZZO", "bairro": "QUINTAS DE BRAGANÇA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.252, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "Samara Letícia Vallerio Ferreira", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 104878, "adesao": "25/04/2023", "logradouro": "Estrada Municipal", "bairro": "LIMAS", "cidade": "Pedra Bela"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.255, "operador_abertura": "jorica", "nome_razaosocial": "MARIA APARECIDA DE OLIVEIRA BUENO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 116358, "adesao": "03/06/2025", "logradouro": "RUA 02", "bairro": "BOM RETIRO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.257, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "SIMONE FASSBENDER DE FREITAS", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 99566, "adesao": "10/08/2021", "logradouro": "Rua Jorge Villa Franca", "bairro": "RECANTO DOS MAIAS", "cidade": "Piracaia"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.26, "operador_abertura": "carlos.augusto", "nome_razaosocial": "WASHINGTON RODRIGO DANTAS DA SILVA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 66806, "adesao": "30/11/2020", "logradouro": "AV JOÃO ALBERTO AHNERT", "bairro": "JD ÁGUAS CLARAS", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.261, "operador_abertura": "jorica", "nome_razaosocial": "WAGNER LUIZ DA SILVA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 114685, "adesao": "11/03/2025", "logradouro": "R JUVENAL DE OLIVEIRA VILACA", "bairro": "CENTRO", "cidade": "Vargem"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "04/03/2026", "protocolo": 2603.265, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "DOUGLAS ROBERTO BARBOSA RAINHO - TERCEIRO PONTO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 121600, "adesao": "05/02/2026", "logradouro": "EST MUN ANTONIO DE MORAES", "bairro": "MORRO GRANDE B VISTA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.268, "operador_abertura": "mariaeduarda.silva", "nome_razaosocial": "SUZANA PAIS IZZO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Lentidão", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "mariaeduarda.silva", "codcontrato": 72704, "adesao": "15/01/2020", "logradouro": "Estrada da Paz", "bairro": "BOM RETIRO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.269, "operador_abertura": "jorica", "nome_razaosocial": "MARCOS ROBERTO GONÇALVES ( RESIDENCIAL ILHA )", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 77592, "adesao": "05/04/2021", "logradouro": "EST MAURO PRÓSPERO", "bairro": "RES DAS ILHAS", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.27, "operador_abertura": "jorica", "nome_razaosocial": "ANDREA BASTOS DI ORONZO", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 70438, "adesao": "11/03/2019", "logradouro": "Condominio Vista Alegre", "bairro": "GUAXINDUVA", "cidade": "Bom Jesus dos Perdões"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.27, "operador_abertura": "jorica", "nome_razaosocial": "CLAUDENIRA CALDEIRA DE SOUZA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - Conexão Normalizada", "operador_encerramento": "jorica", "codcontrato": 121700, "adesao": "09/02/2026", "logradouro": "R JOAQUIM BATISTA FERREIRA", "bairro": "PENHA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.272, "operador_abertura": "carlos.augusto", "nome_razaosocial": "DARIO SOARES DA SILVA SOUZA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 49098, "adesao": "22/10/2019", "logradouro": "R ANTÔNIO MARTINS", "bairro": "CRUZEIRO", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "03/03/2026", "protocolo": 2603.278, "operador_abertura": "carlos.augusto", "nome_razaosocial": "MARIO ANTONIO GIANI", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Sem Acesso", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "carlos.augusto", "codcontrato": 75537, "adesao": "19/01/2021", "logradouro": "Rodovia Padre Aldo Bolini", "bairro": "ÁGUA COMPRIDA", "cidade": "Bragança Paulista"}, {"dt_abertura": "01/03/2026", "dt_finaliza": "01/03/2026", "protocolo": 2603.29, "operador_abertura": "jorica", "nome_razaosocial": "GILBERTO RODRIGUES DA COSTA", "nome_processo": "01 - SUP ATENDIMENTO", "descricao": "SUP - Outros", "descricao_encerramento": "SUP - OUTROS", "operador_encerramento": "jorica", "codcontrato": 49250, "adesao": "29/10/2019", "logradouro": "R DARCY CAPELLETTI", "bairro": "COND PORTAL DA SERRA", "cidade": "Bragança Paulista"}];
+    let redeRaw = [{"bairro": "ARRAIAL", "cidade": "Tuiuti", "olt": "OLT TUIUTI  ", "interface_olt": "PLACA 2", "pon": "2-8", "descricao2": "23AA"}, {"bairro": "BOM RETIRO", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/0", "descricao2": "??CRBR"}, {"bairro": "SERRINHA", "cidade": "Bragança Paulista", "olt": "OLT Huawei Serrinha  ", "interface_olt": " PLACA 1 (0/1)", "pon": "0/1/0", "descricao2": "18SSE"}, {"bairro": "BOM RETIRO", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/14", "descricao2": "168CRBR"}, {"bairro": "JD NOVA AMÉRICA", "cidade": "Bragança Paulista", "olt": "OLT CAPRI FH ", "interface_olt": " PLACA 3", "pon": "3-5", "descricao2": "88CT3"}, {"bairro": "JD SEVILHA", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/0", "descricao2": "??CRBR"}, {"bairro": "RES VEM VIVER", "cidade": "Bragança Paulista", "olt": "OLT AGUAS CLARAS FH ", "interface_olt": " PLACA 2", "pon": "2-8", "descricao2": "87AVV"}, {"bairro": "PENHA", "cidade": "Bragança Paulista", "olt": "OLT CAPRI FH ", "interface_olt": " PLACA 1", "pon": "1-3", "descricao2": "25CPE"}, {"bairro": "CH JULIETA CRISTINA", "cidade": "Bragança Paulista", "olt": "OLT MENDONÇA FH  ", "interface_olt": " PLACA 13", "pon": "13-13", "descricao2": "393P3"}, {"bairro": "BATATUBA", "cidade": "Piracaia", "olt": "OLT Huawei COLINAS  ", "interface_olt": " PLACA 1 (0/1)", "pon": "0/1/2", "descricao2": "CTO JOAO"}, {"bairro": "JD STA RITA DE CÁSSIA", "cidade": "Bragança Paulista", "olt": "OLT Redenilf FH  ", "interface_olt": " PLACA 12", "pon": "12-13", "descricao2": "2755RIN"}, {"bairro": "Jardim dos Ipês", "cidade": "Artur Nogueira", "olt": "OLT ARTUR NOGUEIRA PLANALTO FH  ", "interface_olt": " PLACA 8", "pon": "8-5", "descricao2": "2076ANPY"}, {"bairro": "ÁGUA COMPRIDA", "cidade": "Bragança Paulista", "olt": "OLT Huawei Serrinha  ", "interface_olt": " PLACA 1 (0/1)", "pon": "0/1/5", "descricao2": "84SAC"}, {"bairro": "NOSSO TETO", "cidade": "Piracaia", "olt": "OLT Huawei COLINAS  ", "interface_olt": " PLACA 2 (0/2)", "pon": "0/2/9", "descricao2": "CTO JVF 02"}, {"bairro": "ARRAIAL", "cidade": "Tuiuti", "olt": "OLT TUIUTI  ", "interface_olt": " PLACA 2", "pon": "2-11", "descricao2": "12AA"}, {"bairro": "Residencial Piemonte", "cidade": "Bragança Paulista", "olt": "OLT Redenilf ", "interface_olt": " PLACA 6", "pon": "6-4", "descricao2": "139RV"}, {"bairro": "COND VALE DAS ÁGUAS", "cidade": "Bragança Paulista", "olt": "OLT Redenilf ", "interface_olt": " PLACA 5", "pon": "5-2", "descricao2": "07RVA"}, {"bairro": "JD ÁGUAS CLARAS", "cidade": "Bragança Paulista", "olt": "OLT AGUAS CLARAS FH ", "interface_olt": " PLACA 3", "pon": "3-6", "descricao2": "58AAC 3-6"}, {"bairro": "POUSO ALEGRE", "cidade": "Piracaia", "olt": "OLT Huawei COLINAS  ", "interface_olt": " PLACA 2 (0/2)", "pon": "0/2/12", "descricao2": "CTO R04 C1"}, {"bairro": "TABOÃO", "cidade": "Bragança Paulista", "olt": "OLT Euroville Mall  ", "interface_olt": " PLACA 2", "pon": "2-13", "descricao2": "2948E2JU"}, {"bairro": "TORÓ", "cidade": "Bragança Paulista", "olt": "OLT CAPRI FH ", "interface_olt": " PLACA 4", "pon": "4-1", "descricao2": "122CT3"}, {"bairro": "Jardim de Colores", "cidade": "Artur Nogueira", "olt": "OLT ARTUR NOGUEIRA CENTRO FH  ", "interface_olt": " PLACA 8", "pon": "8-7", "descricao2": "1350ANCO"}, {"bairro": "Jardim Santa Rosa", "cidade": "Artur Nogueira", "olt": "OLT ARTUR NOGUEIRA CENTRO FH  ", "interface_olt": " PLACA 16", "pon": "", "descricao2": "1075ANC3"}, {"bairro": "Morro Grande da Boa Vista", "cidade": "Bragança Paulista", "olt": "OLT Huawei MORRO GRANDE  ", "interface_olt": " PLACA 2 (0/1)", "pon": "0/1/3", "descricao2": "59MGBV"}, {"bairro": "JD LAGO DO MOINHO", "cidade": "Bragança Paulista", "olt": "OLT AGUAS CLARAS FH ", "interface_olt": " PLACA 4", "pon": "4-1", "descricao2": "1399AT"}, {"bairro": "VL S CAETANO", "cidade": "Bragança Paulista", "olt": "OLT DIITALIA FH ", "interface_olt": " PLACA 6", "pon": "6-4", "descricao2": "1897DHO"}, {"bairro": "QUINTAS DE BRAGANÇA", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 2", "pon": "0/2/0", "descricao2": "43CCER"}, {"bairro": "CRISTO REDENTOR", "cidade": "Vargem", "olt": "OLT VARGEM  ", "interface_olt": " PLACA 13", "pon": "13-4", "descricao2": "1866VV3"}, {"bairro": "CH LUZIA VICENTE", "cidade": "Bragança Paulista", "olt": "OLT DIITALIA  ", "interface_olt": " PLACA 3", "pon": "3-2", "descricao2": "346DHJ"}, {"bairro": "Jardim Amaro", "cidade": "Artur Nogueira", "olt": "OLT ARTUR NOGUEIRA CENTRO FH  ", "interface_olt": " PLACA 1", "pon": "1-12", "descricao2": "633ANCA"}, {"bairro": "VILA SÃO JOSÉ", "cidade": "Bom Jesus dos Perdões", "olt": "Araucária A", "interface_olt": "", "pon": "", "descricao2": ""}, {"bairro": "Villa Toscana", "cidade": "Bragança Paulista", "olt": "OLT MENDONÇA FH  ", "interface_olt": " PLACA 15", "pon": "15-7", "descricao2": "08MVT"}, {"bairro": "JD PRIMAVERA", "cidade": "Bragança Paulista", "olt": "OLT Euroville Mall  ", "interface_olt": " PLACA 2", "pon": "2-10", "descricao2": "3023E2JU"}, {"bairro": "Morro Grande da Boa Vista", "cidade": "Bragança Paulista", "olt": "OLT Huawei MORRO GRANDE  ", "interface_olt": " PLACA 2 (0/1)", "pon": "0/1/3", "descricao2": "59MGBV"}, {"bairro": "Guachinduva", "cidade": "Bom Jesus dos Perdões", "olt": "Araucária A", "interface_olt": "", "pon": "", "descricao2": ""}, {"bairro": "MENIN", "cidade": "Bragança Paulista", "olt": "OLT AGUAS CLARAS FH ", "interface_olt": " PLACA 6", "pon": "6-2", "descricao2": "1069CLI"}, {"bairro": "QUINTAS DE BRAGANÇA", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 2", "pon": "0/2/0", "descricao2": "42CCER"}, {"bairro": "LIMAS", "cidade": "Pedra Bela", "olt": "OLT THINK  ", "interface_olt": " PLACA 02  PEDRA BELA LIMAS", "pon": "0/2/2", "descricao2": "CTOs 0/2/2 PBL"}, {"bairro": "BOM RETIRO", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/14", "descricao2": "168CRBR"}, {"bairro": "RECANTO DOS MAIAS", "cidade": "Piracaia", "olt": "OLT Huawei COLINAS  ", "interface_olt": " PLACA 2 (0/2)", "pon": "0/2/9", "descricao2": "CTO JVF 01"}, {"bairro": "JD ÁGUAS CLARAS", "cidade": "Bragança Paulista", "olt": "OLT AGUAS CLARAS FH ", "interface_olt": " PLACA1", "pon": "1-7", "descricao2": "06AAC 1-7"}, {"bairro": "CENTRO", "cidade": "Vargem", "olt": "OLT VARGEM  ", "interface_olt": " PLACA 14", "pon": "14-2", "descricao2": "54VV4"}, {"bairro": "MORRO GRANDE B VISTA", "cidade": "Bragança Paulista", "olt": "OLT Huawei MORRO GRANDE  ", "interface_olt": " PLACA 2 (0/1)", "pon": "0/1/7", "descricao2": "27MGBV"}, {"bairro": "BOM RETIRO", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/3", "descricao2": "77CRBR"}, {"bairro": "RES DAS ILHAS", "cidade": "Bragança Paulista", "olt": "OLT Huawei CROSS  ", "interface_olt": " PLACA 1", "pon": "0/1/0", "descricao2": "??CRBR"}, {"bairro": "GUAXINDUVA", "cidade": "Bom Jesus dos Perdões", "olt": "Araucária A", "interface_olt": "", "pon": "", "descricao2": ""}, {"bairro": "PENHA", "cidade": "Bragança Paulista", "olt": "OLT CAPRI FH ", "interface_olt": " PLACA 1", "pon": "1-3", "descricao2": "25CPE"}, {"bairro": "CRUZEIRO", "cidade": "Bragança Paulista", "olt": "OLT DIITALIA  ", "interface_olt": " PLACA 5", "pon": "5-10", "descricao2": "1027DG"}, {"bairro": "ÁGUA COMPRIDA", "cidade": "Bragança Paulista", "olt": "OLT Huawei MORRO GRANDE  ", "interface_olt": " PLACA 2 (0/1)", "pon": "0/1/2", "descricao2": "111MGAC"}, {"bairro": "COND PORTAL DA SERRA", "cidade": "Bragança Paulista", "olt": "OLT CAPRI FH ", "interface_olt": " PLACA 1", "pon": "1-7", "descricao2": "03CPS"}];
+
+    function normalize(text) {
+      return String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim().toLowerCase();
+    }
+
+    function parseCSVText(text) {
+      const cleanText = String(text || '').replace(/^\uFEFF/, '').trim();
+      const lines = cleanText.split(/\r?\n/).filter(Boolean);
+      if (!lines.length) return [];
+      const delimiter = detectDelimiter(lines[0]);
+      const headers = splitCsvLine(lines[0], delimiter).map(h => String(h || '').trim());
+      return lines.slice(1).map(line => {
+        const values = splitCsvLine(line, delimiter);
+        const row = {};
+        headers.forEach((h, i) => row[h] = String(values[i] || '').trim());
+        return row;
+      });
+    }
+
+    function splitCsvLine(line, delimiter=',') {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const c = line[i];
+        if (c === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (c === delimiter && !inQuotes) {
+          result.push(current);
+          current = '';
+        } else {
+          current += c;
+        }
+      }
+      result.push(current);
+      return result;
+    }
+
+    function detectDelimiter(headerLine) {
+      const commaCount = (headerLine.match(/,/g) || []).length;
+      const semicolonCount = (headerLine.match(/;/g) || []).length;
+      const tabCount = (headerLine.match(/\t/g) || []).length;
+      if (semicolonCount > commaCount && semicolonCount >= tabCount) return ';';
+      if (tabCount > commaCount && tabCount > semicolonCount) return '\t';
+      return ',';
+    }
+
+    function parseWorkbookRows(workbook) {
+      const firstSheetName = workbook.SheetNames[0];
+      const sheet = workbook.Sheets[firstSheetName];
+      return XLSX.utils.sheet_to_json(sheet, { defval: '' });
+    }
+
+    function normalizeHeaders(rows) {
+      return rows.map(row => {
+        const normalized = {};
+        Object.keys(row || {}).forEach(key => {
+          normalized[String(key).trim()] = row[key];
+        });
+        return normalized;
+      });
+    }
+
+    function handleUpload(event, type) {
+      const file = event.target.files && event.target.files[0];
+      if (!file) return;
+      const lower = file.name.toLowerCase();
+
+      if (lower.endsWith('.csv')) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const rows = normalizeHeaders(parseCSVText(String(e.target.result || '')));
+          applyImportedRows(type, rows, file.name);
+        };
+        reader.readAsText(file, 'utf-8');
+        return;
+      }
+
+      if (lower.endsWith('.xlsx') || lower.endsWith('.xls')) {
+        const reader = new FileReader();
+        reader.onload = e => {
+          const data = new Uint8Array(e.target.result);
+          const workbook = XLSX.read(data, { type: 'array' });
+          const rows = normalizeHeaders(parseWorkbookRows(workbook));
+          applyImportedRows(type, rows, file.name);
+        };
+        reader.readAsArrayBuffer(file);
+        return;
+      }
+
+      alert('Formato não suportado. Use CSV ou XLSX.');
+    }
+
+    function applyImportedRows(type, rows, filename) {
+      if (!rows.length) {
+        alert('Arquivo vazio ou sem linhas válidas.');
+        return;
+      }
+      if (type === 'chamados') {
+        chamadosRaw = rows;
+        document.getElementById('statusChamados').textContent = `${rows.length} linhas importadas`;
+      } else {
+        redeRaw = rows;
+        document.getElementById('statusRede').textContent = `${rows.length} linhas importadas`;
+      }
+      populateFilters();
+      renderAll();
+    }
+
+
+    function parseBrDate(s) {
+      const v = String(s || '');
+      const m = v.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (!m) return null;
+      return new Date(Number(m[3]), Number(m[2]) - 1, Number(m[1]));
+    }
+
+    function getPeriodo(dateStr) {
+      const d = parseBrDate(dateStr);
+      if(!d || String(d) === 'Invalid Date') return 'Sem período';
+      const day = d.getDate();
+      if(day <= 10) return 'Início do mês';
+      if(day <= 20) return 'Meio do mês';
+      return 'Fim do mês';
+    }
+
+    function enrichChamados(chamados, rede) {
+      const redeMap = new Map(rede.map(r => [`${normalize(r.bairro)}|${normalize(r.cidade)}`, r]));
+      return chamados.map(r => {
+        const found = redeMap.get(`${normalize(r.bairro)}|${normalize(r.cidade)}`) || {};
+        return {
+          ...r,
+          motivo: r.descricao || 'Não informado',
+          regiao: r.cidade || 'Não informado',
+          atendente: r.operador_abertura || 'Não informado',
+          periodo: getPeriodo(r.dt_abertura),
+          pon: found.pon || found.interface_olt || 'Não mapeado',
+          olt: found.olt || 'Não mapeada'
+        };
+      });
+    }
+
+    function aggregateBy(rows, key, limit=12) {
+      const map = new Map();
+      rows.forEach(r => {
+        const k = r[key] || 'Não informado';
+        map.set(k, (map.get(k) || 0) + 1);
+      });
+      return [...map.entries()].map(([name, value]) => ({name, value})).sort((a,b)=>b.value-a.value).slice(0, limit);
+    }
+
+    function aggregateDate(rows) {
+      const map = new Map();
+      rows.forEach(r => {
+        const k = r.dt_abertura || 'Sem data';
+        map.set(k, (map.get(k) || 0) + 1);
+      });
+      return [...map.entries()].map(([date, total]) => ({date, total})).sort((a,b) => {
+        const da = parseBrDate(a.date); const db = parseBrDate(b.date);
+        return (da?.getTime() || 0) - (db?.getTime() || 0);
+      });
+    }
+
+    function uniqueOptions(rows, key) {
+      return [...new Set(rows.map(r => r[key]).filter(Boolean))].sort((a,b)=> String(a).localeCompare(String(b)));
+    }
+
+    function setSelectOptions(id, items) {
+      const select = document.getElementById(id);
+      const current = select.value;
+      select.innerHTML = `<option value="">Todos</option>` + items.map(v => `<option value="${escapeHtml(v)}">${escapeHtml(v)}</option>`).join('');
+      if(items.includes(current)) select.value = current;
+    }
+
+    function escapeHtml(v) {
+      return String(v ?? '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    function populateFilters() {
+      const base = enrichChamados(chamadosRaw, redeRaw);
+      setSelectOptions('f_periodo', uniqueOptions(base, 'periodo'));
+      setSelectOptions('f_regiao', uniqueOptions(base, 'regiao'));
+      setSelectOptions('f_atendente', uniqueOptions(base, 'atendente'));
+      setSelectOptions('f_motivo', uniqueOptions(base, 'motivo'));
+      setSelectOptions('f_olt', uniqueOptions(base, 'olt'));
+    }
+
+    function resetFilters() {
+      ['f_periodo','f_regiao','f_atendente','f_motivo','f_olt','f_search'].forEach(id => document.getElementById(id).value = '');
+      renderAll();
+    }
+
+    function getFiltered() {
+      const base = enrichChamados(chamadosRaw, redeRaw);
+      const filters = {
+        periodo: document.getElementById('f_periodo').value,
+        regiao: document.getElementById('f_regiao').value,
+        atendente: document.getElementById('f_atendente').value,
+        motivo: document.getElementById('f_motivo').value,
+        olt: document.getElementById('f_olt').value,
+        search: normalize(document.getElementById('f_search').value)
+      };
+      return base.filter(r => {
+        const text = normalize([r.nome_razaosocial, r.protocolo, r.logradouro, r.bairro, r.cidade].join(' | '));
+        return (!filters.periodo || r.periodo === filters.periodo)
+          && (!filters.regiao || r.regiao === filters.regiao)
+          && (!filters.atendente || r.atendente === filters.atendente)
+          && (!filters.motivo || r.motivo === filters.motivo)
+          && (!filters.olt || r.olt === filters.olt)
+          && (!filters.search || text.includes(filters.search));
+      });
+    }
+
+    function setText(id, value) {
+      document.getElementById(id).textContent = value;
+    }
+
+    function renderAll() {
+      const rows = getFiltered();
+      const motivos = aggregateBy(rows, 'motivo');
+      const regioes = aggregateBy(rows, 'regiao');
+      const pons = aggregateBy(rows, 'pon');
+      const olts = aggregateBy(rows, 'olt');
+      const periodos = aggregateBy(rows, 'periodo');
+      const atendentes = aggregateBy(rows, 'atendente');
+      const timeline = aggregateDate(rows);
+
+      setText('kpi_total', rows.length);
+      setText('kpi_motivo', motivos[0]?.name || '-');
+      setText('kpi_regiao', regioes[0]?.name || '-');
+      setText('kpi_olt', olts[0]?.name || '-');
+      setText('kpi_atendente', atendentes[0]?.name || '-');
+      setText('kpi_pon', pons[0]?.name || '-');
+
+      document.getElementById('chart_motivos').innerHTML = renderBars(motivos);
+      document.getElementById('chart_pons').innerHTML = renderBars(pons);
+      document.getElementById('chart_olts').innerHTML = renderBars(olts);
+      document.getElementById('chart_atendentes').innerHTML = renderBars(atendentes);
+      document.getElementById('chart_regioes').innerHTML = renderDonut(regioes);
+      document.getElementById('chart_periodos').innerHTML = renderDonut(periodos);
+      document.getElementById('chart_timeline').innerHTML = renderLine(timeline);
+      renderTable(rows);
+      renderRecorrentes(rows);
+    }
+
+    function renderTable(rows) {
+      const body = document.getElementById('tableBody');
+      body.innerHTML = rows.map(r => `<tr>
+        <td>${escapeHtml(r.dt_abertura || '')}</td>
+        <td>${escapeHtml(r.protocolo || '')}</td>
+        <td>${escapeHtml(r.nome_razaosocial || '')}</td>
+        <td>${escapeHtml(r.motivo || '')}</td>
+        <td>${escapeHtml(r.regiao || '')}</td>
+        <td>${escapeHtml(r.bairro || '')}</td>
+        <td>${escapeHtml(r.pon || '')}</td>
+        <td>${escapeHtml(r.olt || '')}</td>
+        <td>${escapeHtml(r.atendente || '')}</td>
+      </tr>`).join('');
+      document.getElementById('tableCount').textContent = `${rows.length} linhas`;
+    }
+
+    function renderBars(data) {
+      if(!data.length) return `<div class="muted">Sem dados para exibir.</div>`;
+      const max = Math.max(...data.map(d => d.value), 1);
+      return `<div class="bar-list">${
+        data.map(d => `
+          <div class="bar-row">
+            <div class="bar-label" title="${escapeHtml(d.name)}">${escapeHtml(d.name)}</div>
+            <div class="bar-track"><div class="bar-fill" style="width:${(d.value/max)*100}%"></div></div>
+            <div class="bar-value">${d.value}</div>
+          </div>
+        `).join('')
+      }</div>`;
+    }
+
+    function renderDonut(data) {
+      if(!data.length) return `<div class="muted">Sem dados para exibir.</div>`;
+      const colors = ['#1dc7ff','#0c7ea0','#17b387','#6de4ff','#8bbfd3','#243b4a','#597786','#b6d4df'];
+      const total = data.reduce((a,b)=>a+b.value,0);
+      let cumulative = 0;
+      const radius = 70, cx = 110, cy = 110, circumference = 2 * Math.PI * radius;
+      const circles = data.map((d, i) => {
+        const frac = d.value / total;
+        const dash = frac * circumference;
+        const gap = circumference - dash;
+        const offset = -cumulative * circumference;
+        cumulative += frac;
+        return `<circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="${colors[i % colors.length]}" stroke-width="26" stroke-dasharray="${dash} ${gap}" stroke-dashoffset="${offset}" transform="rotate(-90 ${cx} ${cy})"></circle>`;
+      }).join('');
+      const legend = data.map((d, i) => `
+        <div class="legend-item">
+          <div class="swatch" style="background:${colors[i % colors.length]}"></div>
+          <div>${escapeHtml(d.name)}</div>
+          <div><strong>${d.value}</strong></div>
+        </div>`).join('');
+      return `<div class="donut-box">
+        <svg class="donut-svg" viewBox="0 0 220 220">
+          <circle cx="${cx}" cy="${cy}" r="${radius}" fill="none" stroke="#eaf2f7" stroke-width="26"></circle>
+          ${circles}
+          <text x="110" y="104" text-anchor="middle" font-size="13" fill="#607487">Total</text>
+          <text x="110" y="126" text-anchor="middle" font-size="26" font-weight="800" fill="#12202b">${total}</text>
+        </svg>
+        <div class="legend-list">${legend}</div>
+      </div>`;
+    }
+
+    function renderLine(data) {
+      if(!data.length) return `<div class="muted">Sem dados para exibir.</div>`;
+      const width = 1000, height = 320, padX = 48, padY = 28;
+      const maxY = Math.max(...data.map(d => d.total), 1);
+      const stepX = data.length === 1 ? 0 : (width - padX * 2) / (data.length - 1);
+      const points = data.map((d, i) => {
+        const x = padX + i * stepX;
+        const y = height - padY - ((d.total / maxY) * (height - padY * 2));
+        return {x, y, ...d};
+      });
+      const poly = points.map(p => `${p.x},${p.y}`).join(' ');
+      const yTicks = 4;
+      const lines = Array.from({length: yTicks + 1}).map((_, i) => {
+        const y = padY + ((height - padY*2) / yTicks) * i;
+        const value = Math.round(maxY - (maxY / yTicks) * i);
+        return `<g>
+          <line x1="${padX}" y1="${y}" x2="${width - padX}" y2="${y}" stroke="#e8f0f5" />
+          <text x="${padX - 10}" y="${y + 4}" font-size="11" text-anchor="end" fill="#607487">${value}</text>
+        </g>`;
+      }).join('');
+      const labels = points.map(p => `<text x="${p.x}" y="${height - 8}" text-anchor="middle" font-size="11" fill="#607487">${escapeHtml(p.date)}</text>`).join('');
+      const dots = points.map(p => `<g><circle cx="${p.x}" cy="${p.y}" r="4" fill="#1dc7ff"></circle><text x="${p.x}" y="${p.y - 10}" text-anchor="middle" font-size="11" fill="#375467">${p.total}</text></g>`).join('');
+      return `<svg class="line-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="none">
+        ${lines}
+        <polyline fill="none" stroke="#1dc7ff" stroke-width="4" points="${poly}" />
+        ${dots}
+        ${labels}
+      </svg>`;
+    }
+
+    function switchTab(tab) {
+      document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+      document.getElementById(tab).classList.add('active');
+      document.querySelector(`.tab[data-tab="${tab}"]`).classList.add('active');
+    }
+
+    function toCSV(rows) {
+      if(!rows.length) return '';
+      const headers = Object.keys(rows[0]);
+      const esc = v => {
+        const s = String(v ?? '');
+        return /[",\n]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+      };
+      return [headers.join(','), ...rows.map(r => headers.map(h => esc(r[h])).join(','))].join('\n');
+    }
+
+    function downloadCSV(type) {
+      const rows = type === 'chamados' ? chamadosRaw : redeRaw;
+      const blob = new Blob([toCSV(rows)], {type:'text/csv;charset=utf-8;'});
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = type === 'chamados' ? 'base_chamados_embutida.csv' : 'base_rede_embutida.csv';
+      a.click();
+    }
+
+
+    function latestBaseDate(rows) {
+      const dates = rows.map(r => parseBrDate(r.dt_abertura)).filter(Boolean);
+      if (!dates.length) return null;
+      return new Date(Math.max(...dates.map(d => d.getTime())));
+    }
+
+    function getRecorrentes(rows) {
+      const latest = latestBaseDate(rows);
+      if (!latest) return [];
+      const start = new Date(latest);
+      start.setDate(start.getDate() - 29);
+
+      const filtered = rows.filter(r => {
+        const d = parseBrDate(r.dt_abertura);
+        return d && d >= start && d <= latest;
+      });
+
+      const map = new Map();
+      filtered.forEach(r => {
+        const nome = (r.nome_razaosocial || 'Não informado').trim();
+        if (!map.has(nome)) {
+          map.set(nome, { nome, total: 0, motivos: new Map() });
+        }
+        const item = map.get(nome);
+        item.total += 1;
+        const motivo = r.motivo || 'Não informado';
+        item.motivos.set(motivo, (item.motivos.get(motivo) || 0) + 1);
+      });
+
+      return [...map.values()]
+        .filter(item => item.total > 1)
+        .map(item => ({
+          nome: item.nome,
+          total: item.total,
+          motivos: [...item.motivos.entries()]
+            .map(([motivo, qtd]) => ({ motivo, qtd }))
+            .sort((a, b) => b.qtd - a.qtd || a.motivo.localeCompare(b.motivo))
+        }))
+        .sort((a, b) => b.total - a.total || a.nome.localeCompare(b.nome));
+    }
+
+    function renderRecorrentes(rows) {
+      const recorrentes = getRecorrentes(rows);
+      document.getElementById('recorrentesCount').textContent = `${recorrentes.length} clientes`;
+      const el = document.getElementById('recorrentesList');
+      if (!recorrentes.length) {
+        el.innerHTML = '<div class="muted">Nenhum cliente recorrente encontrado nos últimos 30 dias da base filtrada.</div>';
+        return;
+      }
+      el.innerHTML = recorrentes.map(item => `
+        <div class="rec-card">
+          <div class="rec-head">
+            <div class="rec-name">${escapeHtml(item.nome)}</div>
+            <div class="rec-total">${item.total} chamado(s) nos últimos 30 dias</div>
+          </div>
+          <ul class="rec-list">
+            ${item.motivos.map(m => `<li>${m.qtd} ${escapeHtml(m.motivo)}</li>`).join('')}
+          </ul>
+        </div>
+      `).join('');
+    }
+
+
+    populateFilters();
+    renderAll();
+  </script>
+</body>
+</html>
